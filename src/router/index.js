@@ -71,15 +71,27 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/',
+    path: '/  ',
     component: Layout,
-    redirect: '/index',
+    redirect: '/ling/index',
+    name: 'Ling',
+    meta: {
+      title: '我的例子',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
     children: [
       {
-        path: 'index',
+        path: '/ling/index',
         component: () => import('@/views/ling/index'),
         name: 'ling',
         meta: { title: 'ling', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/ling/LoadingCycle',
+        component: () => import('@/views/ling/loadingCycle'),
+        name: 'LoadingCycle',
+        meta: { title: 'LoadingCycle', icon: 'dashboard', noCache: true }
       }
     ]
   },

@@ -27,7 +27,7 @@ export default {
 }
 ul {
   position: absolute;
-  left: calc(50% - 140px);
+  left: calc(50% - 160px);
   top: calc(50% - 42px);
   display: flex;
 }
