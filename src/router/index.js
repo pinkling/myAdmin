@@ -76,7 +76,7 @@ export const constantRoutes = [
     redirect: '/ling/index',
     name: 'Ling',
     meta: {
-      title: '我的例子',
+      title: 'CSS',
       icon: 'lock',
       roles: ['admin', 'editor'] // you can set roles in root nav
     },
@@ -92,6 +92,25 @@ export const constantRoutes = [
         component: () => import('@/views/ling/loadingCycle'),
         name: 'LoadingCycle',
         meta: { title: 'LoadingCycle', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/ol',
+    component: Layout,
+    redirect: '/ol/index',
+    name: 'openlayers',
+    meta: {
+      title: 'openlayers',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: '/ol/index',
+        component: () => import('@/views/openlayers/index'),
+        name: 'openlayers',
+        meta: { title: 'openlayers', icon: 'dashboard', noCache: true }
       }
     ]
   },

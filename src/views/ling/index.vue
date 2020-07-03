@@ -17,7 +17,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .loadingWrap {
   margin: 0;
   padding: 0;
