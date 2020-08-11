@@ -46,6 +46,11 @@ module.exports = {
       alias: {
         '@': resolve('src')
       }
+    },
+    externals: {
+      'AMap': 'AMap', // 高德地图配置
+      'AMapUI': 'AMapUI', // 高德地图配置
+      'Loca': 'Loca' // 高德地图配置
     }
   },
   chainWebpack(config) {

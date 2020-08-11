@@ -450,7 +450,7 @@ util.fontSize = (res) => {
   const docEl = document.documentElement
   const clientWidth = window.innerWidth || docEl.clientWidth || document.body.clientWidth
   if (!clientWidth) return
-  const fontSize = 100 * (clientWidth / 3840)
+  const fontSize = 100 * (clientWidth / 1920)
   return res * fontSize
 }
 

@@ -96,6 +96,50 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/echarts',
+    component: Layout,
+    redirect: '/echarts/index',
+    name: 'echarts',
+    meta: {
+      title: 'echarts',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: '/echarts/index',
+        component: () => import('@/views/echarts/index'),
+        name: 'echarts',
+        meta: { title: 'BarChart', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/echarts/LineChart',
+        component: () => import('@/views/echarts/LineChart'),
+        name: 'echarts',
+        meta: { title: 'LineChart', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/amap',
+    component: Layout,
+    redirect: '/amap/index',
+    name: 'amap',
+    meta: {
+      title: 'amap',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: '/amap/index',
+        component: () => import('@/views/amap/index'),
+        name: 'amap',
+        meta: { title: 'amap', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/ol',
     component: Layout,
     redirect: '/ol/index',
