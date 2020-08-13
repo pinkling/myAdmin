@@ -102,7 +102,7 @@ export const constantRoutes = [
     name: 'echarts',
     meta: {
       title: 'echarts',
-      icon: 'lock',
+      icon: 'chart',
       roles: ['admin', 'editor'] // you can set roles in root nav
     },
     children: [
@@ -110,13 +110,25 @@ export const constantRoutes = [
         path: '/echarts/index',
         component: () => import('@/views/echarts/index'),
         name: 'echarts',
-        meta: { title: 'BarChart', icon: 'dashboard', noCache: true }
+        meta: { title: 'BarChart', icon: 'chart', noCache: true }
+      },
+      {
+        path: '/echarts/BarChart2',
+        component: () => import('@/views/echarts/BarChart2'),
+        name: 'BarChart2',
+        meta: { title: 'BarChart2', icon: 'chart', noCache: true }
       },
       {
         path: '/echarts/LineChart',
         component: () => import('@/views/echarts/LineChart'),
-        name: 'echarts',
-        meta: { title: 'LineChart', icon: 'dashboard', noCache: true }
+        name: 'LineChart',
+        meta: { title: 'LineChart', icon: 'chart', noCache: true }
+      },
+      {
+        path: '/echarts/PieChart',
+        component: () => import('@/views/echarts/PieChart'),
+        name: 'PieChart',
+        meta: { title: 'PieChart', icon: 'chart', noCache: true }
       }
     ]
   },
@@ -136,6 +148,18 @@ export const constantRoutes = [
         component: () => import('@/views/amap/index'),
         name: 'amap',
         meta: { title: 'amap', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/amap/iconPoint',
+        component: () => import('@/views/amap/iconPoint'),
+        name: 'iconPoint',
+        meta: { title: 'iconPoint', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/amap/L7Line',
+        component: () => import('@/views/amap/L7Line'),
+        name: 'L7Line',
+        meta: { title: 'L7Line', icon: 'dashboard', noCache: true }
       }
     ]
   },

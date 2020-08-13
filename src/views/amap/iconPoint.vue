@@ -19,7 +19,16 @@ export default {
     init() {
       this.map = new LaMap({ mapId: 'map' })
       this.map.initMap()
-      this.map.addCircleMarkers([{ lng: 114.170474, lat: 22.627021 }])
+      const option = {
+        img: require('../../assets/map/立案.png'),
+        size: [49, 70],
+        offset: [-24.5, -70],
+        callback: this.click
+      }
+      this.map.addIconMarkers([{ lng: 114.170474, lat: 22.627021 }], option)
+    },
+    click(e) {
+      alert(JSON.stringify(e))
     }
   }
 }

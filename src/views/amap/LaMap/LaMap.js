@@ -40,7 +40,7 @@ class LaMap {
     })
   }
 
-  static getOption(optionDefault, options) {
+  getOption(optionDefault, options) {
     return Object.assign({ ...optionDefault }, options)
   }
 
@@ -292,8 +292,7 @@ class LaMap {
       clickFlag: true,
       clearFlag: true,
       highLight: false,
-      callback: () => {
-      }
+      callback: () => {}
     }, options)
     if (this.polygons[option.type] === undefined) {
       this.polygons[option.type] = []
