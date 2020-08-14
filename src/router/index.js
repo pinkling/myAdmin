@@ -160,6 +160,12 @@ export const constantRoutes = [
         component: () => import('@/views/amap/L7Line'),
         name: 'L7Line',
         meta: { title: 'L7Line', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/amap/HotMap',
+        component: () => import('@/views/amap/HotMap'),
+        name: 'HotMap',
+        meta: { title: 'HotMap', icon: 'dashboard', noCache: true }
       }
     ]
   },
