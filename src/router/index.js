@@ -107,6 +107,18 @@ export const constantRoutes = [
     },
     children: [
       {
+        path: '/echarts/JsonToChart',
+        component: () => import('@/views/echarts/JsonToChart'),
+        name: 'JsonToChart',
+        meta: { title: 'JsonToChart', icon: 'chart', noCache: true }
+      },
+      {
+        path: '/echarts/JsonToChart2',
+        component: () => import('@/views/echarts/JsonToChart2'),
+        name: 'JsonToChart2',
+        meta: { title: 'JsonToChart2', icon: 'chart', noCache: true }
+      },
+      {
         path: '/echarts/index',
         component: () => import('@/views/echarts/index'),
         name: 'echarts',
@@ -166,6 +178,12 @@ export const constantRoutes = [
         component: () => import('@/views/amap/HotMap'),
         name: 'HotMap',
         meta: { title: 'HotMap', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/amap/cluster',
+        component: () => import('@/views/amap/cluster'),
+        name: 'amap_cluster',
+        meta: { title: 'cluster', icon: 'dashboard', noCache: true }
       }
     ]
   },
@@ -185,6 +203,12 @@ export const constantRoutes = [
         component: () => import('@/views/openlayers/index'),
         name: 'openlayers',
         meta: { title: 'openlayers', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/ol/cluster',
+        component: () => import('@/views/openlayers/cluster'),
+        name: 'cluster',
+        meta: { title: 'cluster', icon: 'dashboard', noCache: true }
       }
     ]
   },

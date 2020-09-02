@@ -22,6 +22,8 @@ class LaMap {
     this.htmlMarkers = {} // dom标记点
     this.currentHtmlMarker = {}
     this.pointCloudLayer = null // 点云
+    this.clusterLayer = null // 聚合
+    this.markers = {} // 聚合
   }
 
   // 地图初始化
@@ -785,6 +787,77 @@ class LaMap {
 
   clearHeatmapLayer() {
     this.heatmapLayer.setMap(null)
+  }
+
+  addClusterLayer(data, options = {}) {
+    const option = this.getOption({
+      gridSize: 80,
+      size: [15, 15],
+      pixel: [6, 6],
+      type: 'cluster',
+      clickFlag: true,
+      clearFlag: true,
+      clickType: '',
+      callback: () => {},
+      _renderClusterMarker: function(context) {
+        var factor = Math.pow(context.count / data.length, 1 / 18)
+        var div = document.createElement('div')
+        var Hue = 180 - factor * 180
+        var bgColor = 'hsla(' + Hue + ',100%,50%,0.7)'
+        var fontColor = 'hsla(' + Hue + ',100%,20%,1)'
+        var borderColor = 'hsla(' + Hue + ',100%,40%,1)'
+        var shadowColor = 'hsla(' + Hue + ',100%,50%,1)'
+        div.style.backgroundColor = bgColor
+        var size = Math.round(30 + Math.pow(context.count / data.length, 1 / 5) * 20)
+        div.style.width = div.style.height = size + 'px'
+        div.style.border = 'solid 1px ' + borderColor
+        div.style.borderRadius = size / 2 + 'px'
+        div.style.boxShadow = '0 0 1px ' + shadowColor
+        div.innerHTML = context.count
+        div.style.lineHeight = size + 'px'
+        div.style.color = fontColor
+        div.style.fontSize = '14px'
+        div.style.textAlign = 'center'
+        context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2))
+        context.marker.setContent(div)
+      }
+    }, options)
+
+    if (this.markers[option.type] === undefined) {
+      this.markers[option.type] = []
+    }
+
+    if (option.clearFlag) {
+      if (this.clusterLayer) {
+        this.clusterLayer.clearMarkers()
+      }
+    }
+
+    data.forEach(item => {
+      const marker = new AMap.Marker({
+        content: item.content || ' ', // 自定义点标记覆盖物内容
+        position: item.position || item.center || [item.lng, item.lat] || [0, 0], // 基点位置
+        offset: new AMap.Pixel(option.pixel[0], option.pixel[1]), // 相对于基点的偏移位置
+        extData: item
+      })
+      if (option.clickFlag) {
+        marker.on('click', e => {
+          option.callback(e.target.getExtData(), option)
+        })
+      }
+
+      this.markers[option.type].push(marker)
+    })
+
+    AMap.plugin(['AMap.MarkerClusterer'], () => {
+      this.clusterLayer = new AMap.MarkerClusterer(this.map, this.markers[option.type], {
+        gridSize: option.gridSize,
+        renderClusterMarker: option._renderClusterMarker
+      })
+    })
+  }
+  clearClusterLayer() {
+    this.clusterLayer.clearMarkers()
   }
 }
 

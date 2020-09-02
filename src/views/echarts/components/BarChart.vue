@@ -18,7 +18,9 @@ export default {
   data() {
     return {
       id: 'BarChart' + Math.random() * 100000000,
-      chart: null
+      chart: null,
+      index: 0,
+      timer: null
     }
   },
   watch: {
@@ -29,10 +31,14 @@ export default {
       deep: true
     }
   },
+  beforeDestroy() {
+    clearInterval(this.timer)
+  },
   mounted() {
     this.init(this.data)
     this.addChartClick()
     this.addResize()
+    this.addAutoTooltip()
   },
   methods: {
     init(data) {
@@ -150,6 +156,21 @@ export default {
     // 添加窗口自适应
     addResize() {
       window.addEventListener('resize', () => { this.chart.resize() })
+    },
+    // 添加自动轮播
+    addAutoTooltip(time = 2000) {
+      this.index = 0
+      this.timer = setInterval(() => {
+        this.chart.dispatchAction({
+          type: 'showTip',
+          seriesIndex: 0,
+          dataIndex: this.index
+        })
+        this.index++
+        if (this.index > this.data.name.length) {
+          this.index = 0
+        }
+      }, time)
     }
   }
 }

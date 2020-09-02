@@ -34,6 +34,10 @@ export default {
     this.addChartClick()
     this.addResize()
   },
+  beforeDestroy() {
+    echarts.dispose(this.chart)
+    this.chart = null
+  },
   methods: {
     init(data) {
       const option = {

@@ -5,6 +5,7 @@ import XYZ from 'ol/source/XYZ'
 import { defaults as defaultControls } from 'ol/control'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
+import Cluster from 'ol/source/Cluster'
 import ImageLayer from 'ol/layer/Image'
 import ImageWMS from 'ol/source/ImageWMS'
 import TileWMS from 'ol/source/TileWMS'
@@ -181,7 +182,7 @@ class LMap {
       const feature = this.map.forEachFeatureAtPixel(pixel, (feature) => {
         return feature
       })
-      if (feature === undefined || !feature.get('clickFlag')) {
+      if (feature === undefined || (!feature.get('features') && !feature.get('clickFlag')) || (feature.get('features') && !feature.get('features').length === 1)) {
         this.map.getTargetElement().style.cursor = 'auto'
       } else {
         this.map.getTargetElement().style.cursor = 'pointer'
@@ -191,10 +192,13 @@ class LMap {
     this.map.on('singleclick', (e) => {
       this.clearAllOverlay()
       const pixel = this.map.getEventPixel(e.originalEvent)
-      const feature = this.map.forEachFeatureAtPixel(pixel, (feature) => {
+      let feature = this.map.forEachFeatureAtPixel(pixel, (feature) => {
         return feature
       })
-      if (feature !== undefined && feature.get('clickFlag')) {
+      if (feature !== undefined && (feature.get('clickFlag') || feature.get('features')[0].get('clickFlag') && feature.get('features').length === 1)) {
+        if (feature.get('features') && feature.get('features').length) {
+          feature = feature.get('features')[0]
+        }
         const type = feature.get('type')
         const data = feature.get('data')
         const option = feature.get('option')
@@ -649,6 +653,89 @@ class LMap {
       this.layers['heatmap'] = null
       delete this.layers['heatmap']
     }
+  }
+
+  addCluster(data, options = {}) {
+    const optionDefault = {
+      type: 'cluster',
+      clearFlag: true,
+      distance: 40,
+      clickFlag: true,
+      color: [76, 172, 166, 0.9],
+      callback: () => { alert(1) }
+    }
+    const option = Object.assign({ ...optionDefault }, options)
+
+    if (!this.features[option.type]) {
+      this.features[option.type] = []
+    }
+    const styleCache = {}
+    // 判断layer是否存在
+    if (this.layers[option.type] === undefined) {
+      this.layers[option.type] = new VectorLayer({
+        source: new Cluster({
+          distance: option.distance,
+          source: new VectorSource()
+        })
+      })
+      this.map.addLayer(this.layers[option.type])
+    }
+    // 清除
+    if (option.clearFlag) {
+      this.clearFeaturesByLayerType(option.type)
+    }
+
+    data.forEach(item => {
+      const feature = new Feature({
+        geometry: new Point(item.position || [Number(item.lng), Number(item.lat)]),
+        data: item,
+        type: option.type,
+        clickFlag: option.clickFlag,
+        chosedOption: option.chosedOption,
+        option: option
+      })
+
+      this.features[option.type].push(feature)
+    })
+    this.layers[option.type].getSource().setDistance(option.distance)
+    this.layers[option.type].getSource().getSource().addFeatures(this.features[option.type])
+    this.layers[option.type].setStyle(function(ite) {
+      const size = ite.get('features').length
+      let style = styleCache[size]
+      if (size === 1) {
+        const fill = new Fill({
+          color: option.color
+        })
+        return new Style({
+          image: new Circle({
+            fill: fill,
+            radius: util.fontSize(0.1)
+          }),
+          fill: fill
+        })
+      }
+      if (!style) {
+        style = new Style({
+          image: new Circle({
+            radius: 10,
+            stroke: new Stroke({
+              color: '#fff'
+            }),
+            fill: new Fill({
+              color: '#3399CC'
+            })
+          }),
+          text: new Text({
+            text: size.toString(),
+            fill: new Fill({
+              color: '#fff'
+            })
+          })
+        })
+        styleCache[size] = style
+      }
+      return style
+    })
   }
 }
 
