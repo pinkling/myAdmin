@@ -23,7 +23,7 @@ import $ from 'jquery'
 // import http from '@/plugin/axios'
 
 class LMap {
-  constructor() {
+  constructor(option = {}) {
     this.map = undefined
     this.layers = {}
     this.features = {}
@@ -53,7 +53,8 @@ class LMap {
     ]
     // this.sldt = 'https://mis.sqszhcg.com/arcgis/rest/services/mapsq/sq_sldt/MapServer'
     // this.slbz = 'https://mis.sqszhcg.com/arcgis/rest/services/mapsq/sq_slzj/MapServer'
-    this.sldt = 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
+    // this.sldt = 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
+    this.sldt = 'http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}'
     this.slbz = 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
     this.yxdt = 'http://172.22.137.81:6080/arcgis/rest/services/mapsq/sq_yxdt/MapServer'
     this.yxbz = 'http://172.22.137.81:6080/arcgis/rest/services/mapsq/sq_yxzj/MapServer'
@@ -62,6 +63,9 @@ class LMap {
     this.overlayFeature = {}
     this.partLayer = null
     this.partTmpWms = null
+    this.minZoom = option.minZoom || 10
+    this.maxZoom = option.maxZoom || 18
+    this.zoom = option.zoom || 13
   }
 
   // 初始化地图
@@ -161,11 +165,11 @@ class LMap {
         // 限制地图中心范围，但无法限制缩小范围
         // extent: [110, 26, 114, 30],
         // 定义地图显示层级为16
-        zoom: 13,
+        zoom: this.zoom,
         // 限制缩放级别，可以和extent同用限制范围
-        maxZoom: 18,
+        maxZoom: this.maxZoom,
         // 最小级别，越大则面积越大
-        minZoom: 10
+        minZoom: this.minZoom
         // resolutions: this.resolution
       }),
       // 控件
@@ -662,7 +666,8 @@ class LMap {
       distance: 40,
       clickFlag: true,
       color: [76, 172, 166, 0.9],
-      callback: () => { alert(1) }
+      style: null,
+      callback: () => {}
     }
     const option = Object.assign({ ...optionDefault }, options)
 
@@ -699,7 +704,7 @@ class LMap {
     })
     this.layers[option.type].getSource().setDistance(option.distance)
     this.layers[option.type].getSource().getSource().addFeatures(this.features[option.type])
-    this.layers[option.type].setStyle(function(ite) {
+    this.layers[option.type].setStyle(option.style || function(ite) {
       const size = ite.get('features').length
       let style = styleCache[size]
       if (size === 1) {

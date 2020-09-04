@@ -60,6 +60,7 @@
     "normalize.css": "7.0.0",
     "nprogress": "0.2.0",
     "ol": "^6.3.1",
+    "ol-echarts": "^2.0.2",
     "path-to-regexp": "2.4.0",
     "screenfull": "4.2.0",
     "script-loader": "0.7.2",

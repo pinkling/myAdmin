@@ -209,6 +209,12 @@ export const constantRoutes = [
         component: () => import('@/views/openlayers/cluster'),
         name: 'cluster',
         meta: { title: 'cluster', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/ol/flyline',
+        component: () => import('@/views/openlayers/flyline'),
+        name: 'flyline',
+        meta: { title: 'flyline', icon: 'dashboard', noCache: true }
       }
     ]
   },

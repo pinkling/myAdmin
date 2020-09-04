@@ -17,11 +17,6 @@ export default {
     this.map = new LMap()
     setTimeout(() => {
       this.map.initMap('map')
-      const data = []
-      for (let i = 0; i < 2000; i++) {
-        data[i] = { lng: 112.6 + Math.random(), lat: 27.6 + Math.random() }
-      }
-      this.map.addCluster(data, { callback: () => { this.map.clearAllFeatures() } })
     }, 1000)
   }
 }
