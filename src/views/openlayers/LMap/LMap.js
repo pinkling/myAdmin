@@ -66,6 +66,7 @@ class LMap {
     this.minZoom = option.minZoom || 10
     this.maxZoom = option.maxZoom || 18
     this.zoom = option.zoom || 13
+    this.center = option.center || [112.993066, 28.186488]
   }
 
   // 初始化地图
@@ -161,7 +162,7 @@ class LMap {
         // 指定地图投影模式
         projection: 'EPSG:4326',
         // 定义地图显示的坐标
-        center: [112.993066, 28.186488],
+        center: this.center || [112.993066, 28.186488],
         // 限制地图中心范围，但无法限制缩小范围
         // extent: [110, 26, 114, 30],
         // 定义地图显示层级为16

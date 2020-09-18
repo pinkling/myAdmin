@@ -215,6 +215,31 @@ export const constantRoutes = [
         component: () => import('@/views/openlayers/flyline'),
         name: 'flyline',
         meta: { title: 'flyline', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/ol/heatMap',
+        component: () => import('@/views/openlayers/heatMap'),
+        name: 'olheatMap',
+        meta: { title: 'heatMap', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/avue',
+    component: Layout,
+    redirect: '/avue/index',
+    name: 'avue',
+    meta: {
+      title: 'avue',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: '/avue/index',
+        component: () => import('@/views/avue/index'),
+        name: 'avue',
+        meta: { title: 'avue', icon: 'dashboard', noCache: true }
       }
     ]
   },

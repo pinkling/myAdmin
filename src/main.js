@@ -18,6 +18,9 @@ import './permission' // permission control
 import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
+import Avue from '@smallwei/avue'
+import '@smallwei/avue/lib/index.css'
+import axios from 'axios'
 
 /**
  * If you don't want to use mock-server
@@ -31,11 +34,11 @@ if (process.env.NODE_ENV === 'production') {
   const { mockXHR } = require('../mock')
   mockXHR()
 }
-
+window.axios = axios
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })
-
+Vue.use(Avue)
 // register global utility filters
 Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])
