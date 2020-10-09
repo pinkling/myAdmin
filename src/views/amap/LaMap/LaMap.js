@@ -29,9 +29,6 @@ class LaMap {
   // 地图初始化
   // 需要mapId 初始中心点 初始层级
   initMap() {
-    console.log('>>', this.mapId)
-    console.log('>>', this.initCenter)
-    console.log('>>', this.initZoom)
     this.map = new AMap.Map(this.mapId, {
       center: this.initCenter,
       mapStyle: 'amap://styles/e434399121bb5d4fbea1ac2ab6079717', // 设置地图的显示样式

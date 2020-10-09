@@ -37,6 +37,7 @@ export default {
   beforeDestroy() {
     echarts.dispose(this.chart)
     this.chart = null
+    window.removeEventListener('resize', this.resize)
   },
   methods: {
     init(data) {
@@ -145,7 +146,10 @@ export default {
     },
     // 添加窗口自适应
     addResize() {
-      window.addEventListener('resize', () => { this.chart.resize() })
+      window.addEventListener('resize', this.resize)
+    },
+    resize() {
+      this.chart.resize()
     }
   }
 }

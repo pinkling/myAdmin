@@ -22,6 +22,11 @@ import Avue from '@smallwei/avue'
 import '@smallwei/avue/lib/index.css'
 import axios from 'axios'
 
+// cesium
+var Cesium = require('cesium/Cesium')
+var widgets = require('cesium/Widgets/widgets.css')
+Vue.prototype.Cesium = Cesium
+Vue.prototype.widgets = widgets
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api

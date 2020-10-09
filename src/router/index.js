@@ -244,6 +244,25 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/cesium',
+    component: Layout,
+    redirect: '/cesium/index',
+    name: 'cesium',
+    meta: {
+      title: 'cesium',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: '/cesium/index',
+        component: () => import('@/views/cesium/index'),
+        name: 'cesium',
+        meta: { title: 'cesium', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/dashboard',
     component: Layout,
     redirect: '/dashboard/index',

@@ -6,7 +6,14 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
-const name = defaultSettings.title || 'vue Element Admin' // page title
+// cesium
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+const webpack = require('webpack')
+// cesium
+const cesiumSource = './node_modules/cesium/Source'
+const cesiumWorkers = '../Build/Cesium/Workers'
+
+const name = defaultSettings.title || 'Ling Admin' // page title
 
 // If your port is set to 80,
 // use administrator privileges to execute the command line.
@@ -42,15 +49,38 @@ module.exports = {
     // provide the app's title in webpack's name field, so that
     // it can be accessed in index.html to inject the correct title.
     name: name,
+    // cesium
+    output: {
+      sourcePrefix: ' '
+    },
+    // cesium
+    amd: {
+      toUrlUndefined: true
+    },
     resolve: {
       alias: {
-        '@': resolve('src')
+        '@': resolve('src'),
+        'cesium': path.resolve(__dirname, cesiumSource) // cesium
       }
     },
     externals: {
       'AMap': 'AMap', // 高德地图配置
       'AMapUI': 'AMapUI', // 高德地图配置
       'Loca': 'Loca' // 高德地图配置
+    },
+    // cesium
+    plugins: [
+      new CopyWebpackPlugin([{ from: path.join(cesiumSource, cesiumWorkers), to: 'Workers' }]),
+      new CopyWebpackPlugin([{ from: path.join(cesiumSource, 'Assets'), to: 'Assets' }]),
+      new CopyWebpackPlugin([{ from: path.join(cesiumSource, 'Widgets'), to: 'Widgets' }]),
+      new CopyWebpackPlugin([{ from: path.join(cesiumSource, 'ThirdParty/Workers'), to: 'ThirdParty/Workers' }]),
+      new webpack.DefinePlugin({
+        CESIUM_BASE_URL: JSON.stringify('./')
+      })
+    ],
+    // cesium
+    module: {
+      unknownContextCritical: false
     }
   },
   chainWebpack(config) {

@@ -39,6 +39,14 @@ export default {
     this.addChartClick()
     this.addResize()
   },
+  beforeDestroy() {
+    if (!this.chart) {
+      return
+    }
+    this.chart.dispose()
+    this.chart = null
+    window.removeEventListener('resize', this.resize)
+  },
   methods: {
     init(data) {
       const option = {
@@ -100,7 +108,10 @@ export default {
     },
     // 添加窗口自适应
     addResize() {
-      window.addEventListener('resize', () => { this.chart.resize() })
+      window.addEventListener('resize', this.resize)
+    },
+    resize() {
+      this.chart.resize()
     }
   }
 }

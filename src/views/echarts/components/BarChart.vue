@@ -33,6 +33,12 @@ export default {
   },
   beforeDestroy() {
     clearInterval(this.timer)
+    if (!this.chart) {
+      return
+    }
+    this.chart.dispose()
+    this.chart = null
+    window.removeEventListener('resize', this.resize)
   },
   mounted() {
     this.init(this.data)
@@ -155,7 +161,10 @@ export default {
     },
     // 添加窗口自适应
     addResize() {
-      window.addEventListener('resize', () => { this.chart.resize() })
+      window.addEventListener('resize', this.resize)
+    },
+    resize() {
+      this.chart.resize()
     },
     // 添加自动轮播
     addAutoTooltip(time = 2000) {
