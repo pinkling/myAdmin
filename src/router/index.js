@@ -259,6 +259,66 @@ export const constantRoutes = [
         component: () => import('@/views/cesium/index'),
         name: 'cesium',
         meta: { title: 'cesium', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/point',
+        component: () => import('@/views/cesium/point/index'),
+        name: 'cesium-point',
+        meta: { title: 'point', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/city',
+        component: () => import('@/views/cesium/city/index'),
+        name: 'cesium-city',
+        meta: { title: 'city', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/city2',
+        component: () => import('@/views/cesium/city/index2'),
+        name: 'cesium-city2',
+        meta: { title: 'city2', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/city3',
+        component: () => import('@/views/cesium/city/index3'),
+        name: 'cesium-city3',
+        meta: { title: 'city3', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/city4',
+        component: () => import('@/views/cesium/city/index4'),
+        name: 'cesium-city4',
+        meta: { title: 'city4', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/wall',
+        component: () => import('@/views/cesium/wall/index'),
+        name: 'cesium-wall',
+        meta: { title: 'wall', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/line',
+        component: () => import('@/views/cesium/line/index'),
+        name: 'cesium-line',
+        meta: { title: 'line', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/track',
+        component: () => import('@/views/cesium/track/index'),
+        name: 'cesium-track',
+        meta: { title: 'track', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/rotate',
+        component: () => import('@/views/cesium/rotate/index'),
+        name: 'cesium-rotate',
+        meta: { title: 'rotate', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/flyto',
+        component: () => import('@/views/cesium/flyto/index'),
+        name: 'cesium-flyto',
+        meta: { title: 'flyto', icon: 'dashboard', noCache: true }
       }
     ]
   },

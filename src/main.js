@@ -23,8 +23,11 @@ import '@smallwei/avue/lib/index.css'
 import axios from 'axios'
 
 // cesium
+import Utils from './plugin/cesium/test'
 var Cesium = require('cesium/Cesium')
 var widgets = require('cesium/Widgets/widgets.css')
+Cesium['Utils'] = Utils
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5MjZkYTliZS1jNjY1LTQwMmYtOGYzYS05ZWMyNjQ5NTkxMmQiLCJpZCI6MzU1NzUsImlhdCI6MTYwMjIzMjgxOX0.bBQqAgy5Z2YuzBvUyMdnEKJRMKiW0uR3shbVXcawKsc'
 Vue.prototype.Cesium = Cesium
 Vue.prototype.widgets = widgets
 /**
