@@ -18,7 +18,13 @@ var TrailMaterial = {
 
     this.duration = options.duration
 
+    this.img = options.img
+
     this._time = (new Date()).getTime()
+
+    if (this.img) {
+      Cesium.Material.PolylineTrailImage = this.img
+    }
   }
 
 }
@@ -55,7 +61,7 @@ Cesium.PolylineTrailMaterialProperty = PolylineTrailMaterialProperty
 
 Cesium.Material.PolylineTrailType = 'PolylineTrail'
 
-Cesium.Material.PolylineTrailImage = require('../../assets/logo.png')
+Cesium.Material.PolylineTrailImage = require('../../assets/image/color2.png')
 
 // 注意，网上有很多坑，没有把PolylineTrailImage的重要性介绍的很清楚，需要注意该图片在调试阶段使用渐变色！！！
 

@@ -12,9 +12,13 @@
         <section class="btn" @click="addModel">加载模型</section>
         <section class="btn" @click="baseColor">模型配色</section>
         <section class="btn" @click="addBound">加载边界</section>
-        <section class="btn" @click="flyExtent">围绕(未实现)</section>
+        <section class="btn" @click="hideModel">隐藏模型</section>
+        <section class="btn" @click="addRoad">加载路网</section>
         <section class="btn" @click="addPerson">在线监督员</section>
         <section class="btn" @click="addCases">今日立案数</section>
+        <section class="btn" @click="addRadarScan">雷达扫描</section>
+        <section class="btn" @click="addCircleScan">扩散扫描</section>
+        <section class="btn" @click="addWall">添加墙体</section>
       </section>
     </transition>
 
@@ -37,7 +41,13 @@
     </section>
 
     <transition mode="out-in" name="fade">
-      <section v-if="showInfo === 'person'" key="person" class="person-wrap" style="height: 300px" @click="showInfo = ''">
+      <section
+        v-if="showInfo === 'person'"
+        key="person"
+        class="person-wrap"
+        style="height: 300px"
+        @click="showInfo = ''"
+      >
         <section class="title">监督员详情</section>
         <section class="info-box-row">
           <span class="info-label">姓名:</span>
@@ -104,16 +114,21 @@
 
 <script>
 let viewer = null
+let yViewer = null
 let osmBuildingsTileset = null
 let helper = null
 let handler = null
 let person = null
 const cases = []
 let roam = null
+let circleScan = null
+let radarScan = null
+let wall = null
 // const layers = {}
 
 import Roaming from '../../../plugin/cesium/Roaming'
-
+import TrailMaterial from '../../../plugin/cesium/TrailMaterial' // eslint-disable-line
+import YsCesium from '../../../plugin/cesium/ysCesium'
 export default {
   name: 'Index',
   data() {
@@ -154,6 +169,8 @@ export default {
       viewer._cesiumWidget._creditContainer.style.display = 'none'
       viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(this.Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
 
+      yViewer = new YsCesium({ viewer })
+
       helper = new this.Cesium.EventHelper()
       helper.add(viewer.scene.globe.tileLoadProgressEvent, this.start)
     },
@@ -171,7 +188,9 @@ export default {
       }
     },
     baseColor() {
-      if (!osmBuildingsTileset) { return }
+      if (!osmBuildingsTileset) {
+        return
+      }
       osmBuildingsTileset.style = new this.Cesium.Cesium3DTileStyle({
         defines: {
           material: '${feature[\'building:material\']}'
@@ -214,7 +233,8 @@ export default {
         heading: 0,
         pitch: -90,
         roll: 0,
-        complete: () => {}
+        complete: () => {
+        }
       }, options)
 
       viewer.camera.flyTo({
@@ -246,7 +266,9 @@ export default {
     addPerson() {
       const obj = { lng: 112.98059320518198, lat: 28.198428789919138 }
       const position = this.Cesium.Cartesian3.fromDegrees(obj.lng, obj.lat)
-      if (person) { return }
+      if (person) {
+        return
+      }
       person = viewer.entities.add({
         // 位置
         position: position,
@@ -342,13 +364,14 @@ export default {
         },
         billboard: {
           id: 'fan',
-          image: '/image/立案.png',
+          // image: '/image/立案.png',
+          image: '/image/poi.png',
           rotation: 0, // 设置以弧度为单位的旋转角度
           scale: 1.0, // 以像素为单位
           show: true,
-          // pixelOffset: new this.Cesium.Cartesian2(-24, -70),
-          width: 24,
-          height: 35,
+          pixelOffset: new this.Cesium.Cartesian2(0, -57),
+          width: 20,
+          height: 114,
           disableDepthTestDistance: Number.POSITIVE_INFINITY, // 广告牌不进行深度检测
           heightReference: this.Cesium.HeightReference.RELATIVE_TO_GROUND
 
@@ -357,7 +380,9 @@ export default {
       return c
     },
     addCases() {
-      if (cases.length) { return }
+      if (cases.length) {
+        return
+      }
       cases.push(this.addCase())
       for (let i = 0; i < 10; i++) {
         cases.push(this.addCase(112.98159320518198 + 0.01 * Math.random(), 28.199428789919138 + 0.01 * Math.random()))
@@ -368,7 +393,7 @@ export default {
       handler.setInputAction((movement) => {
         // viewer.selectedEntity = undefined
         console.log('selectedEntity', viewer.selectedEntity)
-        if (viewer.selectedEntity.click) {
+        if (viewer.selectedEntity && viewer.selectedEntity.click) {
           console.log('selectedEntity', viewer.selectedEntity)
           viewer.selectedEntity.callback()
         }
@@ -381,7 +406,7 @@ export default {
       const geojsonOptions = { // 让地图贴地
         clamToGround: true
       }
-      const neighborhoodsPromise = this.Cesium.GeoJsonDataSource.load('/json/芙蓉区.json', geojsonOptions) // 加载资源
+      const neighborhoodsPromise = this.Cesium.GeoJsonDataSource.load('/json/xxx.json', geojsonOptions) // 加载资源
       let neighborhoods = null
       neighborhoodsPromise.then((dataSource) => { // 把数据加到场景里面去
         viewer.dataSources.add(dataSource)
@@ -415,7 +440,88 @@ export default {
         }
       })
     },
-    flyExtent() {}
+    hideModel() {
+      osmBuildingsTileset.show = !osmBuildingsTileset.show
+    },
+    addRoad() {
+      const promise = this.Cesium.GeoJsonDataSource.load('/json/road.json') // 显示管线数据  直接加载json数据 比把json转化成czml在加载 快很多
+      promise.then((dataSource) => {
+        viewer.dataSources.add(dataSource)
+        const entities = dataSource.entities.values
+
+        for (let i = 0; i < entities.length; i++) {
+          const r = entities[i]
+          if (r.polyline === undefined) {
+            r.show = false
+            continue
+          }
+          r.nameID = i // 给每条线添加一个编号，方便之后对线修改样式
+          r.polyline.width = 12 // 添加默认样式
+          r.clampToGround = true
+          r.polyline.material = new this.Cesium.PolylineGlowMaterialProperty({
+            glowPower: 0.2, // 一个数字属性，指定发光强度，占总线宽的百分比。
+            color: this.Cesium.Color.DARKCYAN.withAlpha(0.9)
+          }, 10)
+          // r.polyline.width = 5 // 添加默认样式
+          // r.polyline.material = new this.Cesium.PolylineTrailMaterialProperty({ // 尾迹线材质
+          //   color: this.Cesium.Color.fromCssColorString('rgba(90,90,255, 1)'),
+          //   duration: 6800,
+          //   trailLength: 1
+          // })
+        }
+      })
+    },
+    addCircleScan() {
+      if (circleScan) {
+        yViewer.delCircleScan(circleScan)
+        circleScan = null
+      } else {
+        circleScan = yViewer.addCircleScan({
+          lon: 112.98159320518198, // 经度
+          lat: 28.199428, // 纬度
+          scanColor: new this.Cesium.Color(0, 1.0, 0, 1),
+          r: 1500, // 扫描半径
+          interval: 4000// 时间间隔
+        })
+      }
+    },
+    addRadarScan() {
+      if (radarScan) {
+        yViewer.delRadarScan(radarScan)
+        radarScan = null
+      } else {
+        radarScan = yViewer.addRadarScan({
+          lon: 112.98159320518198, // 经度
+          lat: 28.199428, // 纬度
+          scanColor: new this.Cesium.Color(0, 1.0, 0, 1),
+          r: 1500, // 扫描半径
+          interval: 4000// 时间间隔
+        })
+      }
+    },
+    addWall() {
+      if (wall) {
+        viewer.entities.remove(wall)
+        wall = null
+      } else {
+        wall = viewer.entities.add({
+          name: 'WallTrail',
+          wall: {
+            positions: this.Cesium.Cartesian3.fromDegreesArrayHeights([112.78, 28.19, 1000.0,
+              112.98, 28.19, 1000.0,
+              112.98, 28.39, 1000.0,
+              112.78, 28.39, 1000.0,
+              112.78, 28.19, 1000.0]),
+            material: new this.Cesium.PolylineTrailMaterialProperty({
+              color: this.Cesium.Color.ORANGE,
+              duration: 9000,
+              trailLength: 1,
+              img: require('../../../../public/image/colors3.png')
+            })
+          }
+        })
+      }
+    }
   }
 }
 </script>
@@ -425,6 +531,7 @@ export default {
     width: 100%;
     height: calc(100vh - 84px);
   }
+
   .fade-enter-active, .fade-leave-active {
     transition: opacity .5s;
   }
@@ -474,6 +581,7 @@ export default {
     transform: translateY(1rem);
     opacity: 0;
   }
+
   /*上方过渡动画*/
   .slide-fade-top-enter-active {
     transition: all .3s ease;
@@ -528,6 +636,7 @@ export default {
       }
     }
   }
+
   .person-wrap {
     position: absolute;
     right: 20px;
@@ -545,21 +654,26 @@ export default {
       font-weight: bold;
       color: #FFF;
     }
+
     .info-box-row {
       margin: 5px 0;
       font-size: 15px;
+
       .info-label {
         color: #e0e0e0;
       }
+
       span:nth-child(2) {
 
       }
     }
   }
+
   .tool-wrap {
     position: absolute;
     right: 240px;
     top: 120px;
+
     section {
       margin-bottom: 10px;
     }

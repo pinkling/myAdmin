@@ -323,6 +323,19 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/tool',
+    component: Layout,
+    redirect: '/tool/index',
+    children: [
+      {
+        path: '/tool/index',
+        component: () => import('@/views/tool/xyformat.vue'),
+        name: 'tool',
+        meta: { title: 'tool', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/dashboard',
     component: Layout,
     redirect: '/dashboard/index',
