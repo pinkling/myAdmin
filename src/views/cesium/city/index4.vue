@@ -10,15 +10,18 @@
     <transition mode="out-in" name="slide-fade-left">
       <section v-show="showBox" class="left-wrap">
         <section class="btn" @click="addModel">加载模型</section>
+        <section class="btn" @click="RemoveModel">移除模型</section>
+        <section class="btn" @click="hideModel">隐藏模型</section>
         <section class="btn" @click="baseColor">模型配色</section>
         <section class="btn" @click="addBound">加载边界</section>
-        <section class="btn" @click="hideModel">隐藏模型</section>
         <section class="btn" @click="addRoad">加载路网</section>
         <section class="btn" @click="addPerson">在线监督员</section>
         <section class="btn" @click="addCases">今日立案数</section>
         <section class="btn" @click="addRadarScan">雷达扫描</section>
         <section class="btn" @click="addCircleScan">扩散扫描</section>
         <section class="btn" @click="addWall">添加墙体</section>
+        <section class="btn" @click="addWall2">添加墙体边界</section>
+        <section class="btn" @click="addSjx">添加旋转立方体</section>
       </section>
     </transition>
 
@@ -124,6 +127,8 @@ let roam = null
 let circleScan = null
 let radarScan = null
 let wall = null
+let wall2 = null
+let sjx = null
 // const layers = {}
 
 import Roaming from '../../../plugin/cesium/Roaming'
@@ -147,11 +152,11 @@ export default {
   methods: {
     init() {
       viewer = new this.Cesium.Viewer('cesiumContainer', {
-        terrainProvider: new this.Cesium.CesiumTerrainProvider({ // 添加地形
-          url: this.Cesium.IonResource.fromAssetId(1),
-          requestWaterMask: true,
-          requestVertexNormals: true
-        }),
+        // terrainProvider: new this.Cesium.CesiumTerrainProvider({ // 添加地形
+        //   url: this.Cesium.IonResource.fromAssetId(1),
+        //   requestWaterMask: true,
+        //   requestVertexNormals: true
+        // }),
         shouldAnimate: true,
         geocoder: false, // 地理位置查询定位控件
         homeButton: false, // 默认相机位置控件
@@ -169,6 +174,26 @@ export default {
       viewer._cesiumWidget._creditContainer.style.display = 'none'
       viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(this.Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
 
+      // 添加mapbox自定义地图实例
+      // const layer = new this.Cesium.MapboxStyleImageryProvider({
+      //   url: 'https://api.mapbox.com/styles/v1',
+      //   username: 'dengzengjian',
+      //   styleId: 'ck5290o2z121u1cle7mdtfmdk',
+      //   accessToken: 'pk.eyJ1IjoiZGVuZ3plbmdqaWFuIiwiYSI6ImNqbGhnbWo1ZjFpOHEzd3V2Ynk1OG5vZHgifQ.16zy39I-tbQv3K6UnRk8Cw',
+      //   scaleFactor: true
+      // })
+      //
+      // viewer.imageryLayers.addImageryProvider(layer)
+
+      viewer.imageryLayers.addImageryProvider(new this.Cesium.WebMapTileServiceImageryProvider({
+        url: 'http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{TileMatrix}/{TileRow}/{TileCol}',
+        layer: 'mapBoxLayer',
+        style: 'default',
+        format: 'image/jpeg',
+        tileMatrixSetID: 'GoogleMapsCompatible',
+        show: false
+      }))// 注记图层
+
       yViewer = new YsCesium({ viewer })
 
       helper = new this.Cesium.EventHelper()
@@ -184,8 +209,31 @@ export default {
       if (!osmBuildingsTileset) {
         osmBuildingsTileset = this.Cesium.createOsmBuildings()
         viewer.scene.primitives.add(osmBuildingsTileset)
-        osmBuildingsTileset.distanceDisplayCondition = new this.Cesium.DistanceDisplayCondition(10.0, 6000.0)
+        osmBuildingsTileset.distanceDisplayCondition = new this.Cesium.DistanceDisplayCondition(0.0, 6000.0)
+
+        // const cartographic = this.Cesium.Cartographic.fromCartesian(
+        //   osmBuildingsTileset.boundingSphere.center
+        // )
+        // const surface = this.Cesium.Cartesian3.fromRadians(
+        //   cartographic.longitude,
+        //   cartographic.latitude,
+        //   -100.0
+        // )
+        // const offset = this.Cesium.Cartesian3.fromRadians(
+        //   cartographic.longitude,
+        //   cartographic.latitude,
+        //   -100
+        // )
+        // const translation = this.Cesium.Cartesian3.subtract(
+        //   offset,
+        //   surface,
+        //   new this.Cesium.Cartesian3()
+        // )
+        // osmBuildingsTileset.modelMatrix = this.Cesium.Matrix4.fromTranslation(translation)
       }
+    },
+    RemoveModel() {
+      viewer.scene.primitives.remove(osmBuildingsTileset)
     },
     baseColor() {
       if (!osmBuildingsTileset) {
@@ -282,8 +330,8 @@ export default {
           // 模型路径
           uri: '/3D/Cesium_Man.glb',
           // 模型最小刻度
-          minimumPixelSize: 32,
-          maximumSize: 64,
+          minimumPixelSize: 64,
+          maximumSize: 128,
           // 设置模型最大放大大小
           maximumScale: 128,
           // 模型是否可见
@@ -402,27 +450,20 @@ export default {
       }, this.Cesium.ScreenSpaceEventType.LEFT_CLICK)
     },
     addBound() {
-      // --------geojson
-      const geojsonOptions = { // 让地图贴地
+      const polygon = this.Cesium.GeoJsonDataSource.load('/json/xxx.json', { // 让地图贴地
         clamToGround: true
-      }
-      const neighborhoodsPromise = this.Cesium.GeoJsonDataSource.load('/json/xxx.json', geojsonOptions) // 加载资源
-      let neighborhoods = null
-      neighborhoodsPromise.then((dataSource) => { // 把数据加到场景里面去
+      }) // 加载资源
+      polygon.then((dataSource) => { // 把数据加到场景里面去
         viewer.dataSources.add(dataSource)
-        neighborhoods = dataSource.entities
-        const neighborhoodsEntities = neighborhoods.values
+        const neighborhoodsEntities = dataSource.entities.values
         for (let i = 0; i < neighborhoodsEntities.length; i++) {
           const entity = neighborhoodsEntities[i]
           if (this.Cesium.defined(entity.polygon)) {
             entity.name = entity.properties.name
-            entity.polygon.material = this.Cesium.Color.fromRandom({ // 修改每一个多边形得材质
-              red: 25,
-              green: 32,
-              blue: 111,
-              alpha: 0.3
-            })
+            entity.polygon.material = this.Cesium.Color.fromRandom({ red: 25, green: 32, blue: 111, alpha: 0.3 }) // 修改每一个多边形得材质
+            entity.polygon.outlineColor = new this.Cesium.Color(1, 0, 1, 1) // 边线颜色
             entity.polygon.classificationType = this.Cesium.ClassificationType.TERRAIN // 区块直接贴在地面上
+
             const polyPostions = entity.polygon.hierarchy.getValue(this.Cesium.JulianDate.now()).positions // 从多边形上取出他的顶点
             let polyCenter = this.Cesium.BoundingSphere.fromPoints(polyPostions).center // 通过顶点构建一个包围球
             polyCenter = this.Cesium.Ellipsoid.WGS84.scaleToGeodeticSurface(polyCenter) // 把包围球得中心做贴地得偏移
@@ -456,12 +497,13 @@ export default {
             continue
           }
           r.nameID = i // 给每条线添加一个编号，方便之后对线修改样式
-          r.polyline.width = 12 // 添加默认样式
+          r.polyline.width = 5 // 添加默认样式
           r.clampToGround = true
           r.polyline.material = new this.Cesium.PolylineGlowMaterialProperty({
-            glowPower: 0.2, // 一个数字属性，指定发光强度，占总线宽的百分比。
-            color: this.Cesium.Color.DARKCYAN.withAlpha(0.9)
-          }, 10)
+            glowPower: 0.5, // 一个数字属性，指定发光强度，占总线宽的百分比。
+            color: this.Cesium.Color.DARKCYAN.withAlpha(0.4)
+            // color: new this.Cesium.Color(88 / 255, 88 / 255, 255 / 255, 0.5)
+          })
           // r.polyline.width = 5 // 添加默认样式
           // r.polyline.material = new this.Cesium.PolylineTrailMaterialProperty({ // 尾迹线材质
           //   color: this.Cesium.Color.fromCssColorString('rgba(90,90,255, 1)'),
@@ -518,6 +560,94 @@ export default {
               trailLength: 1,
               img: require('../../../../public/image/colors3.png')
             })
+          }
+        })
+      }
+    },
+    addWall2() {
+      if (wall2) {
+        viewer.entities.remove(wall2)
+        wall2 = null
+      } else {
+        const pos = []
+        const data = require('../../../../public/json/xxx.json')
+        data.features[0].geometry.coordinates[0][0].forEach(item => {
+          pos.push(item[0])
+          pos.push(item[1])
+          pos.push(200)
+        })
+        let alp = 1
+        let num = 0
+        wall2 = viewer.entities.add({
+          name: 'WallTrail2',
+          wall: {
+            show: true,
+            positions: this.Cesium.Cartesian3.fromDegreesArrayHeights(pos),
+            material: new this.Cesium.ImageMaterialProperty({
+              image: require('../../../assets/image/color.png'),
+              transparent: true,
+              color: new this.Cesium.CallbackProperty(() => {
+                if ((num % 2) === 0) { alp -= 0.005 } else { alp += 0.005 }
+                if (alp <= 0.2) { num++ } else if (alp >= 1) { num++ }
+                return new this.Cesium.Color.WHITE.withAlpha(alp) // eslint-disable-line
+              }, false)
+            })
+          }
+        })
+      }
+    },
+    addSjx() {
+      if (sjx) {
+        viewer.entities.remove(sjx)
+        sjx = null
+      } else {
+        const lng = 112.98059320518198
+        const lat = 28.198428789919138
+        const height = 250
+        const position = this.Cesium.Cartesian3.fromDegrees(lng, lat, height)
+
+        let heading = 0// 偏航角（Y轴）
+        const pitch = 0 // 俯仰角（X轴）
+        const roll = 0// 翻滚角（Z轴）
+
+        const xuanzhuan = () => {
+          heading = heading + this.Cesium.Math.toRadians(3)
+          const hpr = new this.Cesium.HeadingPitchRoll(heading, pitch, roll)
+          const orientation = this.Cesium.Transforms.headingPitchRollQuaternion(position, hpr)
+          return orientation
+        }
+
+        sjx = viewer.entities.add({
+          name: '四棱锥',
+          position: position,
+          orientation: new this.Cesium.CallbackProperty(xuanzhuan, false),
+          click: true,
+          callback: () => {
+            alert('点击了四棱锥')
+          },
+          model: {
+            // 模型路径
+            uri: '/3D/sjx.glb',
+            // 模型最小刻度
+            minimumPixelSize: 64,
+            maximumSize: 128,
+            // 设置模型最大放大大小
+            maximumScale: 128,
+            minimumScale: 64,
+            // 模型是否可见
+            show: true,
+            // heightReference: this.Cesium.HeightReference.CLAMP_TO_GROUND, // 让模型在地形上紧贴
+            // 模型轮廓颜色
+            silhouetteColor: this.Cesium.Color.WHITE,
+            // 模型颜色  ，这里可以设置颜色的变化
+            color: this.Cesium.Color.WHITE,
+            // 仅用于调试，显示魔仙绘制时的线框
+            debugWireframe: false,
+            // 仅用于调试。显示模型绘制时的边界球。
+            debugShowBoundingVolume: false,
+
+            scale: 64,
+            runAnimations: true // 是否运行模型中的动画效果
           }
         })
       }
@@ -615,7 +745,7 @@ export default {
     top: 120px;
     left: 20px;
     width: 200px;
-    height: 500px;
+    height: 700px;
     background: rgba(20, 137, 164, 0.5);
 
     .btn {

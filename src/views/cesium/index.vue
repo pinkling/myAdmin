@@ -9,9 +9,8 @@ export default {
     return {}
   },
   mounted() {
-    var Cesium = this.Cesium
-    // var cesiumContainer = document.getElementById('cesiumContainer')
-    var cc = new Cesium.Viewer('cesiumContainer', {
+    const Cesium = this.Cesium
+    const cc = new Cesium.Viewer('cesiumContainer', {
       terrainProvider: new Cesium.CesiumTerrainProvider({ // 添加地形
         url: Cesium.IonResource.fromAssetId(1),
         requestWaterMask: true,
