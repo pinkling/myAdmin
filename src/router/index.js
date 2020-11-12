@@ -267,6 +267,18 @@ export const constantRoutes = [
         meta: { title: 'point', icon: 'dashboard', noCache: true }
       },
       {
+        path: '/cesium/entity',
+        component: () => import('@/views/cesium/entity/index'),
+        name: 'cesium-entity',
+        meta: { title: 'entity', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/PointRotate',
+        component: () => import('@/views/cesium/PointRotate/index'),
+        name: 'cesium-PointRotate',
+        meta: { title: 'PointRotate', icon: 'dashboard', noCache: true }
+      },
+      {
         path: '/cesium/city',
         component: () => import('@/views/cesium/city/index'),
         name: 'cesium-city',
@@ -297,10 +309,28 @@ export const constantRoutes = [
         meta: { title: 'wall', icon: 'dashboard', noCache: true }
       },
       {
+        path: '/cesium/wall2',
+        component: () => import('@/views/cesium/wall/index2'),
+        name: 'cesium-wall2',
+        meta: { title: 'wall2', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/circle',
+        component: () => import('@/views/cesium/circle/index'),
+        name: 'cesium-circle',
+        meta: { title: 'circle', icon: 'dashboard', noCache: true }
+      },
+      {
         path: '/cesium/line',
         component: () => import('@/views/cesium/line/index'),
         name: 'cesium-line',
         meta: { title: 'line', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/line2',
+        component: () => import('@/views/cesium/line/index2'),
+        name: 'cesium-line2',
+        meta: { title: 'line2', icon: 'dashboard', noCache: true }
       },
       {
         path: '/cesium/track',
@@ -319,6 +349,43 @@ export const constantRoutes = [
         component: () => import('@/views/cesium/flyto/index'),
         name: 'cesium-flyto',
         meta: { title: 'flyto', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/three',
+    component: Layout,
+    redirect: '/three/index',
+    name: 'three',
+    meta: {
+      title: 'three',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: '/three/index',
+        component: () => import('@/views/three/index.vue'),
+        name: 'three',
+        meta: { title: 'three', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/three/dalou',
+        component: () => import('@/views/three/dalou/index.vue'),
+        name: 'three-dalou',
+        meta: { title: 'three-dalou', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/three/city',
+        component: () => import('@/views/three/city/index.vue'),
+        name: 'three-city',
+        meta: { title: 'three-city', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/three/city2',
+        component: () => import('@/views/three/city/index2.vue'),
+        name: 'three-city2',
+        meta: { title: 'three-city2', icon: 'dashboard', noCache: true }
       }
     ]
   },

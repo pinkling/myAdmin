@@ -5,7 +5,8 @@
 <script>
 let viewer = null
 let osmBuildingsTileset = null
-import TrailMaterial from '../../../plugin/cesium/TrailMaterial' // eslint-disable-line
+// import TrailMaterial from '../../../plugin/cesium/TrailMaterial' // eslint-disable-line
+import { default as PolylineTrailMaterial } from '../../../plugin/cesium/PolylineTrailMaterial'
 export default {
   name: 'Index',
   data() {
@@ -81,9 +82,10 @@ export default {
       viewer.entities.add({
         name: '动态线',
         polyline: {
-          width: 15,
+          width: 5,
           positions: positions,
-          material: new this.Cesium.PolylineTrailMaterialProperty({ // 尾迹线材质
+          // material: new this.Cesium.PolylineTrailMaterialProperty({ // 尾迹线材质
+          material: new PolylineTrailMaterial({ // 尾迹线材质
             color: this.Cesium.Color.fromCssColorString('rgba(90,90,255, 1)'),
             duration: 6800,
             trailLength: 1
