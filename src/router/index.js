@@ -261,6 +261,12 @@ export const constantRoutes = [
         meta: { title: 'cesium', icon: 'dashboard', noCache: true }
       },
       {
+        path: '/cesium/SmartCity',
+        component: () => import('@/views/cesium/SmartCity/index'),
+        name: 'cesium-SmartCity',
+        meta: { title: '智慧城市', icon: 'star', noCache: true }
+      },
+      {
         path: '/cesium/point',
         component: () => import('@/views/cesium/point/index'),
         name: 'cesium-point',

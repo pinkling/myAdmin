@@ -57,6 +57,7 @@
     "file-saver": "2.0.1",
     "fuse.js": "3.4.4",
     "gcoord": "^0.2.3",
+    "heatmap.js": "^2.0.5",
     "js-cookie": "2.2.0",
     "jsonlint": "1.6.3",
     "jszip": "3.2.1",
