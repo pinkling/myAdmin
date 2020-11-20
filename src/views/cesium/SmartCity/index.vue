@@ -9,19 +9,106 @@
 
     <transition mode="out-in" name="slide-fade-left">
       <section v-show="showBox" class="left-wrap">
-        <section class="btn" @click="addModel">加载模型</section>
-        <section class="btn" @click="RemoveModel">移除模型</section>
-        <section class="btn" @click="hideModel">隐藏模型</section>
-        <section class="btn" @click="baseColor">模型配色</section>
-        <section class="btn" @click="addBound">加载边界</section>
-        <section class="btn" @click="addRoad">加载路网</section>
-        <section class="btn" @click="addPerson">在线监督员</section>
-        <section class="btn" @click="addCases">今日立案数</section>
-        <section class="btn" @click="addRadarScan">雷达扫描</section>
-        <section class="btn" @click="addCircleScan">扩散扫描</section>
-        <section class="btn" @click="addWall">添加墙体</section>
-        <section class="btn" @click="addWall2">添加墙体边界</section>
-        <section class="btn" @click="addSjx">添加旋转立方体</section>
+        <section class="small-title">
+          案件信息
+        </section>
+        <section style="height: 80px;">
+          <section class="flex-center" style="width: 100%">
+            <section v-for="item in caseData" :key="item.key" class="flex-center case-item" @click="addCases">
+              <section style="text-align: center">
+                <section class="case-label">{{ item.label }}</section>
+                <section class="case-value">{{ item.value }}</section>
+              </section>
+            </section>
+          </section>
+        </section>
+        <section style="height: 200px">
+          <bar-chart2 v-if="showBox"></bar-chart2>
+        </section>
+        <section class="small-title">
+          人员信息
+        </section>
+        <section style="width: 100%;height: 240px">
+          <section class="person-info">
+            <section class="sum-bg flex-center" @click="addPerson">
+              <section style="display: flex;height: 45px;line-height: 45px;">
+                <section style="color:rgba(255,255,255,0.70);font-size: 20px">监督员总人数</section>
+                <section style="font-size: 24px;margin-left: 10px">
+                  <!--{{leftTopData.ob_num}}-->
+                  1410
+                </section>
+              </section>
+            </section>
+            <section class="cycle-wrap">
+              <section class="flex-center" style="width: 50%;height: 100%;">
+                <section style="width: 70%;height: 100%;">
+                  <section style="width: 100px;height: 100px;margin: 10px auto;">
+                    <cycle-chart
+                      :legend="'出勤率'"
+                      :data="98.25"
+                    ></cycle-chart>
+                  </section>
+                  <section
+                    style="margin: 10px 0; font-size: 16px;color: #FFF; display: flex;align-items: center"
+                  >
+                    <section class="flex-center" style="width: 20%;">
+                      <section
+                        style="width: 10px;height: 10px;background: #0E284C"
+                      ></section>
+                    </section>
+                    <section style="width: 40%;color: rgba(255,255,255,0.7)">应出勤</section>
+                    <section style="width: 40%;font-size: 18px;">514</section>
+                  </section>
+                  <section
+                    style="margin: 10px 0; font-size: 16px;color: #FFF; display: flex;align-items: center"
+                  >
+                    <section class="flex-center" style="width: 20%;">
+                      <section
+                        style="width: 10px;height: 10px;background: #4293F4"
+                      ></section>
+                    </section>
+                    <section style="width: 40%;color: rgba(255,255,255,0.7)">已出勤</section>
+                    <section style="width: 40%;font-size: 18px;">505</section>
+                  </section>
+                </section>
+              </section>
+
+              <section class="flex-center" style="width: 50%;height: 100%;">
+                <section style="width: 70%;height: 100%;">
+                  <section style="width: 100px;height: 100px;margin: 10px auto;">
+                    <cycle-chart
+                      :legend="'在线率'"
+                      :data="97.07"
+                      :colors="['#2ED7B4']"
+                    ></cycle-chart>
+                  </section>
+                  <section
+                    style="margin: 10px 0; font-size: 16px;color: #FFF; display: flex;align-items: center"
+                  >
+                    <section class="flex-center" style="width: 20%;">
+                      <section
+                        style="width: 10px;height: 10px;background: #0E284C"
+                      ></section>
+                    </section>
+                    <section style="width: 40%;color: rgba(255,255,255,0.7)">应在线</section>
+                    <section style="width: 40%;font-size: 18px;">512</section>
+                  </section>
+                  <section
+                    style="margin: 10px 0; font-size: 16px;color: #FFF; display: flex;align-items: center"
+                  >
+                    <section class="flex-center" style="width: 20%;">
+                      <section
+                        style="width: 10px;height: 10px;background: #2ED7B4"
+                      ></section>
+                    </section>
+                    <section style="width: 40%;color: rgba(255,255,255,0.7)">实在线</section>
+                    <section style="width: 40%;font-size: 18px;">497</section>
+                  </section>
+                </section>
+              </section>
+            </section>
+          </section>
+        </section>
       </section>
     </transition>
 
@@ -116,19 +203,21 @@
 </template>
 
 <script>
+import BarChart2 from './components/BarChart2'
 let viewer = null
 let yViewer = null
 let osmBuildingsTileset = null
 let helper = null
 let handler = null
 let person = null
-const cases = []
+let cases = []
 let roam = null
 let circleScan = null
 let radarScan = null
 let wall = null
 let wall2 = null
 let sjx = null
+const entity = {}
 // const layers = {}
 
 import Roaming from '../../../plugin/cesium/Roaming'
@@ -137,15 +226,23 @@ import { default as PolylineTrailMaterial } from '../../../plugin/cesium/Polylin
 import { default as WallTrailMaterial } from '../../../plugin/cesium/WallTrailMaterial'
 
 import YsCesium from '../../../plugin/cesium/ysCesium'
+import CycleChart from './components/CycleChart'
 export default {
   name: 'Index',
+  components: { CycleChart, BarChart2 },
   data() {
     return {
       showBox: false,
       showInfo: '',
       showTool: false,
       timer: null,
-      rotateFlag: true
+      rotateFlag: true,
+      caseData: [
+        { key: 'sb', label: '上报数', value: '6126' },
+        { key: 'la', label: '立案数', value: '6045' },
+        { key: 'ja', label: '结案数', value: '3444' },
+        { key: 'cs', label: '超时数', value: '4' }
+      ]
     }
   },
   mounted() {
@@ -313,6 +410,7 @@ export default {
       this.addBound()
       this.addWall2()
       this.addSjx()
+      this.addEllipse()
 
       this.showBox = true
       this.addClick()
@@ -422,12 +520,12 @@ export default {
         billboard: {
           id: 'fan',
           // image: '/image/立案.png',
-          image: '/image/poi.png',
+          image: '/image/linePoi.png',
           rotation: 0, // 设置以弧度为单位的旋转角度
           scale: 1.0, // 以像素为单位
           show: true,
           pixelOffset: new this.Cesium.Cartesian2(0, -57),
-          width: 20,
+          width: 46,
           height: 114,
           disableDepthTestDistance: Number.POSITIVE_INFINITY, // 广告牌不进行深度检测
           heightReference: this.Cesium.HeightReference.RELATIVE_TO_GROUND
@@ -438,11 +536,15 @@ export default {
     },
     addCases() {
       if (cases.length) {
-        return
-      }
-      cases.push(this.addCase())
-      for (let i = 0; i < 10; i++) {
-        cases.push(this.addCase(112.98159320518198 + 0.01 * Math.random(), 28.199428789919138 + 0.01 * Math.random()))
+        cases.forEach(item => {
+          viewer.entities.remove(item)
+        })
+        cases = []
+      } else {
+        cases.push(this.addCase())
+        for (let i = 0; i < 20; i++) {
+          cases.push(this.addCase(112.98059320518198 + 0.03 * Math.random(), 28.197428789919138 + 0.03 * Math.random()))
+        }
       }
     },
     addClick() {
@@ -664,6 +766,38 @@ export default {
           }
         })
       }
+    },
+    // 加载椭圆
+    addEllipse() {
+      if (entity.ellipse) {
+        viewer.entities.remove(entity.ellipse)
+        delete entity.ellipse
+      } else {
+        let rotation = this.Cesium.Math.toRadians(30)
+        const getRotationValue = () => {
+          rotation -= 0.005
+          return rotation
+        }
+        entity.ellipse = viewer.entities.add({
+          position: this.Cesium.Cartesian3.fromDegrees(112.976322, 28.195325),
+          name: 'Blue translucent, rotated, and extruded ellipse with outline',
+          ellipse: {
+            semiMinorAxis: 500.0, // 半短轴
+            semiMajorAxis: 500.0, // 半长轴
+            height: 20.0, // 距离地球球面高度
+            material: new this.Cesium.ImageMaterialProperty({
+              // image: '/image/roateCir.png',
+              image: '/image/bg_circle.png',
+              transparent: true// 别忘了把允许透明打开
+            }),
+            rotation: new this.Cesium.CallbackProperty(getRotationValue, false),
+            stRotation: new this.Cesium.CallbackProperty(getRotationValue, false),
+            outline: 5// windows 下 不能为1 可以置为false
+          },
+          data: { a: 1 }, // 额外数据
+          click: true
+        })
+      }
     }
   }
 }
@@ -754,6 +888,7 @@ export default {
     background-position: center center;
 
     font-family: Microsoft YaHei,serif;
+    font-weight: bold;
     color: #FFF;
     text-align: center;
     line-height: 50px;
@@ -761,13 +896,22 @@ export default {
     letter-spacing: 5px;
   }
 
+  .flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   .left-wrap {
     position: absolute;
     top: 120px;
-    left: 20px;
-    width: 200px;
-    height: 700px;
-    background: rgba(20, 137, 164, 0.5);
+    left: 0px;
+    width: 400px;
+    height: 635px;
+    background: rgba(7, 17, 25, 0.5);
+
+    color: #FFF;
+    overflow-x: hidden;
+    overflow-y: auto;
 
     .btn {
       width: 70%;
@@ -786,15 +930,112 @@ export default {
         background: #0a98d0;
       }
     }
+    .small-title {
+      width: 100%;
+      height: 38px;
+      line-height: 38px;
+      background: url("../../../assets/image/titleBg.png") no-repeat;
+      background-size: contain;
+      background-position: center center;
+      font-size: 20px;
+      color: #FFF;
+      font-weight: 900;
+      font-family: "Microsoft YaHei";
+      text-indent: 20px;
+      letter-spacing: 3px;
+    }
+    .case-item {
+      width: 25%;
+      height: 80px;
+      cursor: pointer;
+      transition: all .3s ease;
+      .case-label {
+        margin: 5px 0;
+        font-size: 16px;
+        color: #e2e2e2;
+      }
+      .case-value {
+        margin: 5px 0;
+        font-size: 22px;
+        font-weight: bold;
+      }
+      &:hover {
+        background: rgba(45, 100, 195, 0.5);
+      }
+    }
+    .person-info {
+      width: 100%;
+      font-family: "Microsoft YaHei";
+      font-weight: 400;
+
+      .container {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        margin: 15px auto;
+
+        .left {
+          width: 24%;
+        }
+
+        .right {
+          width: 76%;
+          margin: 0 auto;
+          border-left: 1px solid rgba(225, 230, 230, 0.5);
+
+          .circle-green {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(48, 223, 186, 0.1);
+            border: 0.04rem solid rgba(48, 223, 186, 1);
+            margin: 0 auto;
+          }
+
+          .col {
+            width: 42%;
+            margin: 0 4%;
+          }
+        }
+      }
+
+      .label {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .value {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 1);
+      }
+
+      .value-green {
+        font-size: 18px;
+        color: rgba(48, 223, 186, 1);
+      }
+      .sum-bg {
+        width: 300px;
+        height: 45px;
+        margin: 15px auto;
+        background: url("../../../assets/image/bg1.png") no-repeat;
+        background-position: center;
+        background-size: cover;
+        cursor: pointer;
+      }
+      .cycle-wrap {
+        width: 100%;
+        display: flex;
+      }
+    }
   }
 
   .person-wrap {
     position: absolute;
     right: 20px;
     top: 120px;
-    width: 200px;
+    width: 300px;
     height: 400px;
-    background: rgba(25, 32, 111, 0.8);
+    background: rgba(7, 17, 25, 0.5);
     border: #0a76a4 1px solid;
     color: #FFF;
     padding: 10px;

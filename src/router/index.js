@@ -309,6 +309,12 @@ export const constantRoutes = [
         meta: { title: 'city4', icon: 'dashboard', noCache: true }
       },
       {
+        path: '/cesium/city5',
+        component: () => import('@/views/cesium/city/index5'),
+        name: 'cesium-city5',
+        meta: { title: 'city5', icon: 'dashboard', noCache: true }
+      },
+      {
         path: '/cesium/wall',
         component: () => import('@/views/cesium/wall/index'),
         name: 'cesium-wall',
@@ -337,6 +343,18 @@ export const constantRoutes = [
         component: () => import('@/views/cesium/line/index2'),
         name: 'cesium-line2',
         meta: { title: 'line2', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/heatmap',
+        component: () => import('@/views/cesium/heatmap/index'),
+        name: 'cesium-heatmap',
+        meta: { title: 'heatmap', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/cesium/heatmap2',
+        component: () => import('@/views/cesium/heatmap/index2'),
+        name: 'cesium-heatmap2',
+        meta: { title: 'heatmap2', icon: 'dashboard', noCache: true }
       },
       {
         path: '/cesium/track',
