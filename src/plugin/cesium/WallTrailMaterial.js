@@ -1,4 +1,5 @@
 import * as Cesium from 'cesium/Cesium'
+
 class WallTrailMaterial {
   constructor(option = {}) {
     this._definitionChanged = new Cesium.Event()
@@ -8,8 +9,9 @@ class WallTrailMaterial {
 
     this.color = option.color ? option.color : Cesium.Color.fromCssColorString('rgba(90,90,255, 1)')
     this.duration = option.duration ? option.duration : 5000
-    this.img = option.img ? option.img : require('../../assets/image/color2.png')
-
+    this.img = this.getColorRamp([`rgba(${this.color.red},${this.color.green},${this.color.blue},0)`, `rgba(${this.color.red},${this.color.green},${this.color.blue},1)`], false)
+    // this.img = option.img ? option.img : require('../../assets/image/color2.png')
+    console.log('>>>', this.color)
     // 类型（会自动加载到cesium中）
     this.type = option.type ? option.type : 'WallTrail'
 
@@ -37,7 +39,8 @@ class WallTrailMaterial {
   getValue(time, result) {
     if (!Cesium.defined(result)) { result = {} }
 
-    result.color = { red: 0 / 255, green: 0 / 255, blue: 1 / 255, alpha: 0.8 }
+    // result.color = { red: 0 / 255, green: 0 / 255, blue: 1 / 255, alpha: 0.8 }
+    result.color = { red: this.color.red / 255, green: this.color.green / 255, blue: this.color.blue / 255, alpha: this.color.alpha }
     result.image = this.img
     result.time = (((new Date()).getTime() - this._time) % this.duration) / this.duration
 
@@ -57,7 +60,6 @@ class WallTrailMaterial {
         },
         source: this.source
       },
-
       translucent: (material) => {
         return true
       }
@@ -83,6 +85,24 @@ class WallTrailMaterial {
         writable: true
       }
     })
+  }
+  getColorRamp(color, isVertical = true) {
+    const ramp = document.createElement('canvas')
+    ramp.width = isVertical ? 1 : 100
+    ramp.height = isVertical ? 100 : 1
+    const ctx = ramp.getContext('2d')
+
+    const grd = isVertical ? ctx.createLinearGradient(0, 0, 0, 100) : ctx.createLinearGradient(0, 0, 100, 0)
+    grd.addColorStop(0, color[0])
+    grd.addColorStop(1, color[1])
+
+    ctx.fillStyle = grd
+    if (isVertical) {
+      ctx.fillRect(0, 0, 1, 100)
+    } else {
+      ctx.fillRect(0, 0, 100, 1)
+    }
+    return ramp.toDataURL('image/png')
   }
 }
 export default WallTrailMaterial
