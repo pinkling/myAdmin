@@ -9,9 +9,8 @@ class WallTrailMaterial {
 
     this.color = option.color ? option.color : Cesium.Color.fromCssColorString('rgba(90,90,255, 1)')
     this.duration = option.duration ? option.duration : 5000
-    this.img = this.getColorRamp([`rgba(${this.color.red},${this.color.green},${this.color.blue},0)`, `rgba(${this.color.red},${this.color.green},${this.color.blue},1)`], false)
+    this.img = this.getColorRamp([`rgba(${this.color.red * 255},${this.color.green * 255},${this.color.blue * 255},0)`, `rgba(${this.color.red * 255},${this.color.green * 255},${this.color.blue * 255},1)`], false)
     // this.img = option.img ? option.img : require('../../assets/image/color2.png')
-    console.log('>>>', this.color)
     // 类型（会自动加载到cesium中）
     this.type = option.type ? option.type : 'WallTrail'
 
