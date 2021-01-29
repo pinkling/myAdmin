@@ -9,6 +9,7 @@ class LaMap {
     this.mapId = option.mapId || 'map'
     this.initCenter = option.initCenter || [114.170474, 22.627021]
     this.initZoom = option.initZoom || 11
+    this.choseZoom = option.choseZoom || 17
     this.wms = null
     this.borderLayer = null // 边界线
     this.lastMarker = null
@@ -18,12 +19,21 @@ class LaMap {
     this.lastPolygonMarker = {}
     this.textMarkers = {} // 文本数据
     this.iconMarkers = {} // ICON标记
+    this.lastIconMarker = null // 上一个Icon标记
+    this.lastIconMarkerOption = null // 上一个
+    this.lastLineMarker = null // 上一个Icon标记
+    this.lastLineMarkerOption = null // 上一个
     this.massMarkers = {} // 海量标记点
+    this.lastMassMarker = null
+    this.lastMassMarkerOption = {}
     this.htmlMarkers = {} // dom标记点
     this.currentHtmlMarker = {}
     this.pointCloudLayer = null // 点云
     this.clusterLayer = null // 聚合
     this.markers = {} // 聚合
+    this.lineMarkers = {} // 线条
+    this.object3Dlayer = null
+    this.areaText = {}
   }
 
   // 地图初始化
@@ -37,6 +47,40 @@ class LaMap {
       zooms: [10, 18],
       zoom: this.initZoom
     })
+  }
+
+  init3DLayer() {
+    if (!this.object3Dlayer) {
+      const object3Dlayer = this.object3Dlayer = new AMap.Object3DLayer({ zIndex: 1000 })
+      this.map.add(object3Dlayer)
+    }
+  }
+
+  addPrism(data) {
+    this.init3DLayer()
+    const vm = this
+    data.forEach((item) => {
+      var bounds = vm.lngLatArray(item['path'])
+      // var bounds = [
+      //   new AMap.LngLat(113.833267, 22.680388),
+      //   new AMap.LngLat(113.832283, 22.675449),
+      //   new AMap.LngLat(113.838036, 22.681561),
+      //   new AMap.LngLat(113.844925, 22.694576)
+      // ]
+      var height = 10
+      var color = '#0088ff'
+      var prism = new AMap.Object3D.Prism({
+        path: bounds,
+        height: height,
+        width: 50,
+        color: color
+      })
+      vm.object3Dlayer.add(prism)
+    })
+  }
+
+  setCenter(data) {
+    this.map.setCenter(data)
   }
 
   getOption(optionDefault, options) {
@@ -274,7 +318,7 @@ class LaMap {
   }
 
   /**         区域         **/
-  // data: {name: String, path: [[lng, lat],[lng, lat]]]
+  // data: [{name: String, path: [s],[lng, lat]]]
   addPolygonMarkers(data, options = {}) {
     const option = this.getOption({
       type: 'default',
@@ -291,7 +335,8 @@ class LaMap {
       clickFlag: true,
       clearFlag: true,
       highLight: false,
-      callback: () => {}
+      callback: () => {
+      }
     }, options)
     if (this.polygons[option.type] === undefined) {
       this.polygons[option.type] = []
@@ -300,6 +345,19 @@ class LaMap {
       this.clearPolygonMarkers(option.type)
     }
     data.forEach(item => {
+      const text = new AMap.Text({
+        zIndex: option.zIndex || 50,
+        text: item.name,
+        position: item.c_point,
+        style: {
+          'padding': '5px 10px',
+          'background-color': '#001014',
+          'border': '1px solid #0b6a6b',
+          'text-align': 'center',
+          'font-size': '12px',
+          'color': '#fff'
+        }
+      })
       const polygon = new AMap.Polygon({
         path: item[option.path],
         strokeStyle: option.strokeStyle,
@@ -339,11 +397,18 @@ class LaMap {
           option.callback(item)
         })
       }
-      polygon.center = item.center || [0, 0] // 区域中心点
+      // polygon.center = item.center || [0, 0] // 区域中心点
       // polygon.center = areasCenter[item.name] // 区域中心点
       this.polygons[option.type].push(polygon)
+      text.setMap(this.map)
     })
     this.map.add(this.polygons[option.type])
+  }
+
+  // 清除地图点位
+  clearMap() {
+    this.clearAllMapData()
+    this.map.clearMap()
   }
 
   clearPolygonMarkers(type = 'default') {
@@ -544,25 +609,34 @@ class LaMap {
     const option = this.getOption({
       img: null,
       size: [15, 15],
+      selectedSize: [78, 70],
+      selectOffset: [38, 45],
       offset: [0, 0],
       pixel: [0, 0],
       type: 'default',
       clickFlag: true,
-      fitViewFlag: false,
+      fitViewFlag: true,
       clearFlag: true,
       showLabel: false,
       zIndex: 6000,
       callback: () => {
       }
     }, options)
+    if (!option.selectOffset) {
+      option.selectOffset = option.offset
+    }
     if (this.iconMarkers[option.type] === undefined) {
       this.iconMarkers[option.type] = []
     }
     if (option.clearFlag) {
       this.clearIconMarkers(option.type)
     }
-
     data.forEach(item => {
+      // const detail = JSON.parse(JSON.stringify(item))
+      // Object.assign(option, detail)
+      if (!(item.lng && item.lat)) {
+        return
+      }
       item.markerType = option.type || 'default'
       const icon = new AMap.Icon({
         size: new AMap.Size(option.size[0], option.size[1]), // 图标尺寸
@@ -575,7 +649,7 @@ class LaMap {
         position: new AMap.LngLat(Number(item.lng), Number(item.lat)),
         offset: new AMap.Pixel(option.offset[0], option.offset[1]),
         icon: icon, // 添加 Icon 实例
-        // title: item.name || '',
+        title: item.name || '',
         zoom: 11,
         extData: item,
         zIndex: option.zIndex
@@ -583,6 +657,31 @@ class LaMap {
 
       if (option.clickFlag) {
         marker.on('click', e => {
+          if (this.lastIconMarker !== null) {
+            const icon = new AMap.Icon({
+              size: new AMap.Size(this.lastIconMarkerOption.size[0], this.lastIconMarkerOption.size[1]), // 图标尺寸
+              image: this.lastIconMarkerOption.img, // Icon的图像
+              imageOffset: new AMap.Pixel(this.lastIconMarkerOption.pixel[0], this.lastIconMarkerOption.pixel[1]), // 图像相对展示区域的偏移量，适于雪碧图等
+              imageSize: new AMap.Size(this.lastIconMarkerOption.size[0], this.lastIconMarkerOption.size[1]) // 根据所设置的大小拉伸或压缩图片
+            })
+            this.lastIconMarker.setIcon(icon)
+          }
+          this.lastIconMarker = marker
+          this.lastIconMarkerOption = option
+
+          const icon = new AMap.Icon({
+            size: new AMap.Size(option.selectedSize[0], option.selectedSize[1]), // 图标尺寸
+            image: option.selectedOption, // Icon的图像
+            imageOffset: new AMap.Pixel(option.pixel[0], option.pixel[1]), // 图像相对展示区域的偏移量，适于雪碧图等
+            imageSize: new AMap.Size(option.selectedSize[0], option.selectedSize[1]) // 根据所设置的大小拉伸或压缩图片
+          })
+
+          marker.setIcon(icon)
+          marker.setOffset(new AMap.Pixel(option.selectOffset[0], option.selectOffset[1]))
+          console.log(item.lng + ',' + item.lat)
+          // 移动地图
+          this.movePoint(new AMap.LngLat(Number(item.lng), Number(item.lat)))
+          this.zoom(this.choseZoom)
           option.callback(e.target.getExtData(), option)
         })
       }
@@ -590,7 +689,7 @@ class LaMap {
         marker.setLabel({
           offset: new AMap.Pixel(0, 0),
           content: item.name,
-          direction: 'bottom'
+          direction: 'top'
         })
       }
       this.iconMarkers[option.type].push(marker)
@@ -602,6 +701,65 @@ class LaMap {
     }
   }
 
+  /**
+   * @Author ling.yuan@topevery.club
+   * @Date 2020/12/26 14:55:48
+   * @Param type String 图层类型 例如：‘car'
+   * @Param options Object 该图层对应的配置项
+   * @Param data String|Number|Boolean 需要对比的值 例如 '475343'
+   * @Param target String 对比的属性 例如 'id'
+   * @Description 高亮选中数据对应的点
+   */
+  hightLightIconMarkerByData(type, options, data, target) {
+    const option = this.getOption({
+      img: null,
+      size: [15, 15],
+      selectedSize: [78, 70],
+      offset: [0, 0],
+      pixel: [0, 0],
+      type: 'default',
+      clickFlag: true,
+      fitViewFlag: false,
+      clearFlag: true,
+      showLabel: false,
+      zIndex: 6000,
+      callback: () => {
+      }
+    }, options)
+    if (this.iconMarkers[type] && this.iconMarkers[type].length) {
+      this.iconMarkers[type].forEach(item => {
+        const e = item.getExtData()
+        if (data === e[target]) {
+          console.log('selected:', e)
+          // 恢复之前的内容
+          if (this.lastIconMarker !== null) {
+            const icon = new AMap.Icon({
+              size: new AMap.Size(this.lastIconMarkerOption.size[0], this.lastIconMarkerOption.size[1]), // 图标尺寸
+              image: this.lastIconMarkerOption.img, // Icon的图像
+              imageOffset: new AMap.Pixel(this.lastIconMarkerOption.pixel[0], this.lastIconMarkerOption.pixel[1]), // 图像相对展示区域的偏移量，适于雪碧图等
+              imageSize: new AMap.Size(this.lastIconMarkerOption.size[0], this.lastIconMarkerOption.size[1]) // 根据所设置的大小拉伸或压缩图片
+            })
+            // AMap.setPointToCenter(400, 400)
+            this.lastIconMarker.setIcon(icon)
+          }
+          // 修改当前的内容
+          const icon = new AMap.Icon({
+            size: new AMap.Size(option.selectedSize[0], option.selectedSize[1]), // 图标尺寸
+            image: option.selectedOption, // Icon的图像
+            imageOffset: new AMap.Pixel(option.pixel[0], option.pixel[1]), // 图像相对展示区域的偏移量，适于雪碧图等
+            imageSize: new AMap.Size(option.selectedSize[0], option.selectedSize[1]) // 根据所设置的大小拉伸或压缩图片
+          })
+          item.setIcon(icon)
+          item.setOffset(new AMap.Pixel(option.selectOffset[0], option.selectOffset[1]))
+          this.lastIconMarker = item
+          this.lastIconMarkerOption = option
+          console.log(item.getPosition())
+          this.movePoint(item.getPosition())
+        }
+      })
+    }
+  }
+
   clearIconMarkers(type) {
     if (this.iconMarkers[type] && this.iconMarkers[type].length > 0) {
       this.map.remove(this.iconMarkers[type])
@@ -609,15 +767,200 @@ class LaMap {
     }
   }
 
+  // 清除全部icon标记
+  clearAllIconMarkers() {
+    for (const key in this.iconMarkers) {
+      if (this.iconMarkers[key] && this.iconMarkers[key].length > 0) {
+        this.map.remove(this.iconMarkers[key])
+        delete this.iconMarkers[key]
+      }
+    }
+  }
+
+  /**         线段          **/
+  addLineMarkers(data, options) {
+    const option = this.getOption({
+      path: 'path',
+      strokeColor: 'green', // 线条颜色
+      strokeOpacity: 0.4, // 线条透明度
+      strokeWeight: 3, // 线条宽度
+      hightLightBorderWeight: 3, // 线条颜色
+      hightLightStrokeColor: 'red', // 线条颜色
+      lineJoin: 'round', // 折线拐点连接处样式
+      borderWeight: 3, // 描边的宽度，默认为 1
+      isOutline: true, // 线条是否描边
+      outlineColor: '#29f07f', // 描边颜色
+      cursor: 'pointer',
+      type: 'default',
+      clickFlag: true,
+      isChecked: false,
+      fitViewFlag: true,
+      clearFlag: true,
+      highLightFlag: true,
+      showLabel: false,
+      zIndex: 6000,
+      callback: () => {
+      }
+    }, options)
+    if (this.lineMarkers[option.type] === undefined) {
+      this.lineMarkers[option.type] = []
+    }
+    if (option.clearFlag) {
+      this.clearLineMarkers(option.type)
+    }
+    data.forEach(item => {
+      const path = this.lngLatArray(item[option.path])
+      const polyline = new AMap.Polyline({
+        path: path,
+        borderWeight: option.borderWeight, // 线条宽度，默认为 1
+        strokeColor: option.strokeColor, // 线条颜色
+        strokeOpacity: option.strokeOpacity,
+        strokeWeight: option.strokeWeight,
+        outlineColor: option.outlineColor,
+        isOutline: option.isOutline,
+        cursor: option.cursor, // 鼠标线条样式
+        extData: item,
+        lineJoin: option.lineJoin // 折线拐点连接处样式
+      })
+      polyline.on('click', e => {
+        option.isChecked = true
+        if (this.lastLineMarker !== null) {
+          this.lastLineMarker.setOptions({
+            borderWeight: this.lastLineMarkerOption.hightLightBorderWeight, // 线条宽度，默认为 1
+            strokeColor: this.lastLineMarkerOption.strokeColor, // 线条颜色
+            strokeOpacity: this.lastLineMarkerOption.strokeOpacity
+          })
+          this.lastLineMarkerOption.isChecked = false
+        }
+        this.lastLineMarker = polyline
+        this.lastLineMarkerOption = option
+        polyline.setOptions({
+          borderWeight: option.hightLightBorderWeight, // 线条宽度，默认为 1
+          strokeColor: option.hightLightStrokeColor, // 线条颜色
+          strokeOpacity: 0.8
+        })
+        option.callback(e.target.getExtData(), option)
+      })
+      if (option.highLightFlag) {
+        polyline.on('mouseover', e => {
+          if (!option.isChecked) {
+            polyline.setOptions({
+              borderWeight: option.hightLightBorderWeight, // 线条宽度，默认为 1
+              strokeColor: option.hightLightStrokeColor // 线条颜色
+            })
+          }
+        })
+        polyline.on('mouseout', e => {
+          if (!option.isChecked) {
+            polyline.setOptions({
+              borderWeight: option.borderWeight, // 线条宽度，默认为 1
+              strokeColor: option.strokeColor // 线条颜色
+            })
+          }
+        })
+      }
+      this.lineMarkers[option.type].push(polyline)
+    })
+    this.map.add(this.lineMarkers[option.type])
+    // 自动调整层级
+    if (option.fitViewFlag) {
+      this.map.setFitView()
+    }
+  }
+
+  clearLineMarkers(type = 'default') {
+    if (this.lineMarkers[type] && this.lineMarkers[type].length > 0) {
+      this.map.remove(this.lineMarkers[type])
+      this.lineMarkers[type] = []
+    }
+  }
+
+  lngLatArray(data) {
+    const arr = []
+    data.forEach((item) => {
+      arr.push(new AMap.LngLat(item.lng, item.lat))
+    })
+    return arr
+  }
+
+  /*
+   *@description:
+   *@author: hejw
+   *@date: 2021-01-05 17:10:26
+   *@param: type    线类型，如 'car' 由自己定义，一般是唯一的
+   *@param: options 配置参数
+   *@param: data   对应target的数值
+   *@param: target 需要比对的key
+   *
+  */
+  hightLightLineByData(type, options, data, target) {
+    const option = this.getOption({
+      path: 'path',
+      strokeColor: 'green', // 线条颜色
+      strokeOpacity: 0.4, // 线条透明度
+      strokeWeight: 3, // 线条宽度
+      hightLightBorderWeight: 3, // 线条颜色
+      hightLightStrokeColor: 'red', // 线条颜色
+      lineJoin: 'round', // 折线拐点连接处样式
+      borderWeight: 3, // 描边的宽度，默认为 1
+      isOutline: true, // 线条是否描边
+      outlineColor: '#29f07f', // 描边颜色
+      cursor: 'pointer',
+      type: 'default',
+      clickFlag: true,
+      isChecked: false,
+      fitViewFlag: true,
+      clearFlag: true,
+      highLightFlag: true,
+      showLabel: false,
+      zIndex: 6000,
+      callback: () => {
+      }
+    }, options)
+    if (this.lineMarkers[type] && this.lineMarkers[type].length) {
+      this.lineMarkers[type].forEach(item => {
+        const e = item.getExtData()
+        if (data === e[target]) {
+          console.log('selected:', e)
+          // 恢复之前的内容
+          if (this.lastLineMarker !== null) {
+            this.lastLineMarker.setOptions({
+              borderWeight: this.lastLineMarkerOption.hightLightBorderWeight, // 线条宽度，默认为 1
+              strokeColor: this.lastLineMarkerOption.hightLightStrokeColor, // 线条颜色
+              strokeOpacity: this.lastLineMarkerOption.strokeOpacity,
+              strokeWeight: this.lastLineMarkerOption.strokeWeight,
+              outlineColor: this.lastLineMarkerOption.outlineColor,
+              isOutline: this.lastLineMarkerOption.isOutline
+            })
+            this.lastLineMarkerOption.isChecked = true
+          }
+          // 修改当前的内容
+          item.setOptions({
+            borderWeight: option.hightLightBorderWeight, // 线条宽度，默认为 1
+            strokeColor: option.hightLightStrokeColor, // 线条颜色
+            strokeOpacity: 0.8
+          })
+
+          this.lastLineMarker = item
+          this.lastLineMarkerOption = option
+          this.map.setFitView()
+        }
+      })
+    }
+  }
+
   /**         海量点标记     **/
   addMassMarkers(data, options = {}) {
     const option = this.getOption({
       img: null,
+      selectImg: null,
       size: [15, 15],
+      selectedSize: [78, 70],
       pixel: [6, 6],
       type: 'default',
       clickFlag: true,
       clearFlag: true,
+      fitViewFlag: true,
       clickType: '',
       callback: () => {
       }
@@ -626,25 +969,95 @@ class LaMap {
     if (option.clearFlag) {
       this.clearMassMarkers(option.type)
     }
+    data.forEach((item) => {
+      item.style = 0
+    })
 
     const styleOption = {
       url: option.img,
       size: new AMap.Size(option.size[0], option.size[1]),
       anchor: new AMap.Pixel(option.pixel[0], option.pixel[1])
     }
+    const styleSelectedOption = {
+      url: option.selectImg,
+      size: new AMap.Size(option.selectedSize[0], option.selectedSize[1]),
+      anchor: new AMap.Pixel(option.pixel[0], option.pixel[1])
+    }
 
+    const styleObjectArr = [styleOption, styleSelectedOption]
     this.massMarkers[option.type] = new AMap.MassMarks(data, {
       zIndex: 5000,
       zooms: [10, 19],
-      style: styleOption
+      style: styleObjectArr
     })
-
     this.massMarkers[option.type].setMap(this.map)
 
     if (option.clickFlag) {
       this.massMarkers[option.type].on('click', e => {
-        option.callback(e)
+        if (this.lastMassMarker !== null) {
+          this.lastMassMarker.style = 0
+        }
+        console.log('e>', e)
+        this.lastMassMarker = e.data
+        this.lastMassMarkerOption = option
+        e.data.style = 1
+        this.movePoint(e.data.lnglat)
+        option.callback(e.data)
       })
+    }
+    this.movePoint(data[0].lnglat)
+    // 自动调整层级
+    if (option.fitViewFlag) {
+      this.map.setFitView()
+    }
+  }
+
+  /**
+   * @Author ling.yuan@topevery.club
+   * @Date 2020/12/26 14:55:48
+   * @Param type String 图层类型 例如：‘car'
+   * @Param options Object 该图层对应的配置项
+   * @Param data String|Number|Boolean 需要对比的值 例如 '475343'
+   * @Param target String 对比的属性 例如 'id'
+   * @Description 高亮选中数据对应的点
+   */
+  hightLightMassMarkerByData(type, options, data, target) {
+    const option = this.getOption({
+      img: null,
+      selectImg: null,
+      size: [15, 15],
+      selectedSize: [78, 70],
+      pixel: [6, 6],
+      type: 'default',
+      clickFlag: true,
+      clearFlag: true,
+      fitViewFlag: true,
+      clickType: '',
+      callback: () => {
+      }
+    }, options)
+    const massData = this.massMarkers[type].getData()
+    if (massData && massData.length > 0) {
+      massData.forEach(item => {
+        if (data === item[target]) {
+          console.log('selected:', item)
+          // 恢复之前的内容
+          if (this.lastMassMarker !== null) {
+            this.lastMassMarker.style = 0
+          }
+          // 修改当前的内容
+          item.style = 1
+          this.lastMassMarker = item
+          this.lastMassMarker.lastIconMarkerOption = option
+          this.movePoint(item.lnglat)
+        }
+      })
+    }
+  }
+
+  clearAllMassMarkers() {
+    for (const key in this.massMarkers) {
+      this.clearMassMarkers(key)
     }
   }
 
@@ -788,14 +1201,15 @@ class LaMap {
 
   addClusterLayer(data, options = {}) {
     const option = this.getOption({
-      gridSize: 80,
+      gridSize: 20,
       size: [15, 15],
       pixel: [6, 6],
       type: 'cluster',
       clickFlag: true,
       clearFlag: true,
       clickType: '',
-      callback: () => {},
+      callback: () => {
+      },
       _renderClusterMarker: function(context) {
         var factor = Math.pow(context.count / data.length, 1 / 18)
         var div = document.createElement('div')
@@ -853,8 +1267,34 @@ class LaMap {
       })
     })
   }
+
   clearClusterLayer() {
     this.clusterLayer.clearMarkers()
+  }
+
+  //
+  panBy(x, y) {
+    this.map.panBy(x, y)
+  }
+
+  // 移动
+  move(lnglat) { // [116.405467, 39.907761]
+    this.map.panTo(lnglat)
+  }
+
+  // 层级
+  zoom(num) {
+    this.map.setZoom(num)
+  }
+
+  movePoint(lnglat) {
+    this.move(lnglat)
+    this.zoom(this.choseZoom)
+  }
+
+  clearAllMapData() {
+    this.clearAllMassMarkers()
+    this.clearAllIconMarkers()
   }
 }
 
