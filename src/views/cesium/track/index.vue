@@ -93,7 +93,7 @@ export default {
       roam = new Roaming(viewer, {
         // modeluri: 'https://sandcastle.cesium.com/SampleData/models/CesiumMilkTruck/CesiumMilkTruck.glb',
         // modeluri: 'http://192.168.20.98:8080/CesiumMilkTruck.glb',
-        modeluri: '/3D/CesiumMilkTruck.glb',
+        modeluri: '/myAdmin/3D/CesiumMilkTruck.glb',
         time: 1000,
         Lines: [
           { lng: -122.3612, lat: 47.658, height: 0.0 },

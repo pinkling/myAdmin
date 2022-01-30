@@ -328,7 +328,7 @@ export default {
         // 加载模型
         model: {
           // 模型路径
-          uri: '/3D/Cesium_Man.glb',
+          uri: '/myAdmin/3D/Cesium_Man.glb',
           // 模型最小刻度
           minimumPixelSize: 64,
           maximumSize: 128,
@@ -363,7 +363,7 @@ export default {
       roam = new Roaming(viewer, {
         // modeluri: 'https://sandcastle.cesium.com/SampleData/models/CesiumMilkTruck/CesiumMilkTruck.glb',
         // modeluri: 'http://192.168.20.98:8080/CesiumMilkTruck.glb',
-        modeluri: '/3D/Cesium_Man.glb',
+        modeluri: '/myAdmin/3D/Cesium_Man.glb',
         time: 1000,
         Lines: [
           { lng: 112.98059320518198, lat: 28.198428789919138, height: 0.0 },
@@ -627,7 +627,7 @@ export default {
           },
           model: {
             // 模型路径
-            uri: '/3D/sjx.glb',
+            uri: '/myAdmin/3D/sjx.glb',
             // 模型最小刻度
             minimumPixelSize: 64,
             maximumSize: 128,
