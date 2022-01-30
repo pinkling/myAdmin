@@ -50,7 +50,7 @@ export default {
     },
     load3D() {
       const loader = new GLTFLoader()
-      loader.load('/3D/dalou.gltf', (gltf) => {
+      loader.load('/myAdmin/3D/dalou.gltf', (gltf) => {
         this.scene.add(gltf.scene)
       }, (xhr) => {
         console.log((xhr.loaded / xhr.total) * 100 + '% loaded')

@@ -52,7 +52,7 @@ export default {
       dracoLoader.preload()
       loader.setDRACOLoader(dracoLoader)
 
-      loader.load('/3D/city.glb', (gltf) => {
+      loader.load('/myAdmin/3D/city.glb', (gltf) => {
         this.scene.add(gltf.scene)
         this.renderer.render(this.scene, this.camera)
       }, (xhr) => {

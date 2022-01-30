@@ -55,7 +55,7 @@ export default {
 
       new RGBELoader()
         .setDataType(Three.UnsignedByteType)
-        .load('hdr/kloppenheim_02_1k.hdr', (texture) => {
+        .load('myAdmin/hdr/kloppenheim_02_1k.hdr', (texture) => {
           const envMap = pmremGenerator.fromEquirectangular(texture).texture
           envMap.isPmremTexture = true
           pmremGenerator.dispose()
@@ -70,7 +70,7 @@ export default {
       dracoLoader.preload()
       loader.setDRACOLoader(dracoLoader)
 
-      loader.load('/3D/city3.glb', (gltf) => {
+      loader.load('/myAdmin/3D/city3.glb', (gltf) => {
         this.scene.add(gltf.scene)
         this.renderer.render(this.scene, this.camera)
       }, (xhr) => {

@@ -561,7 +561,7 @@ export default {
       }, this.Cesium.ScreenSpaceEventType.LEFT_CLICK)
     },
     addBound() {
-      const polygon = this.Cesium.GeoJsonDataSource.load('/json/430102.json', { // 让地图贴地
+      const polygon = this.Cesium.GeoJsonDataSource.load('/myAdmin/json/430102.json', { // 让地图贴地
         clamToGround: true
       }) // 加载资源
       polygon.then((dataSource) => { // 把数据加到场景里面去
@@ -596,7 +596,7 @@ export default {
       osmBuildingsTileset.show = !osmBuildingsTileset.show
     },
     addRoad() {
-      const promise = this.Cesium.GeoJsonDataSource.load('/json/road.json') // 显示管线数据  直接加载json数据 比把json转化成czml在加载 快很多
+      const promise = this.Cesium.GeoJsonDataSource.load('/myAdmin/json/road.json') // 显示管线数据  直接加载json数据 比把json转化成czml在加载 快很多
       promise.then((dataSource) => {
         viewer.dataSources.add(dataSource)
         const entities = dataSource.entities.values
